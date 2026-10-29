@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Setu — Societal Innovation Collaboration Platform</title>
+<meta name="description" content="Setu connects citizens, government reviewers, universities, students and industry to turn real civic problems into verified, deployed solutions." />
+
+<!-- Low-bandwidth switch: decided before first paint so the web font can be skipped.
+     Auto-on for Data Saver / 2G / 3G; the "Low data" button in the top bar overrides it. -->
+<script>
+(function(){
+  var KEY='setu_low_bw';
+  function auto(){ try{ var c=navigator.connection||navigator.mozConnection||navigator.webkitConnection; return !!c && (c.saveData || /(^|-)(2g|3g)$/.test(c.effectiveType||'')); }catch(e){ return false; } }
+  function stored(){ try{ return localStorage.getItem(KEY); }catch(e){ return null; } }
+  window.LowBW = {
+    isOn: function(){ var v=stored(); return v===null ? auto() : v==='1'; },
+    set: function(on){ try{ localStorage.setItem(KEY, on?'1':'0'); }catch(e){} }
+  };
+  if (window.LowBW.isOn()) { document.documentElement.className += ' low-bw'; }
+  else {
+    var l=document.createElement('link'); l.rel='stylesheet';
+    l.href='https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap';
+    document.head.appendChild(l);
+  }
+})();
+</script>
+
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<!-- ============ TOAST ============ -->
+<div id="toast" class="toast"></div>
+
+<!-- ============ AUTH / ROLE-SELECT SCREEN ============ -->
+<section id="auth-screen" class="auth-screen">
+  <div class="auth-backdrop"></div>
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="auth-brand-mark" data-no-translate>सेतु</span>
+      <div>
+        <div class="auth-brand-name" data-no-translate>Setu</div>
+        <div class="auth-brand-sub">Problem → Innovation → Impact</div>
+      </div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login">Log in</button>
+      <button class="auth-tab" data-tab="signup">Sign up</button>
+    </div>
+
+    <form id="auth-form" class="auth-form">
+      <label class="field">
+        <span class="field-label">I am a…</span>
+        <div class="select-wrap">
+          <select id="role-select">
+            <option value="" disabled selected>Select your role</option>
+            <option value="citizen">🧑 Citizen</option>
+            <option value="government">🏛️ Government / Reviewer</option>
+            <option value="university">🎓 University</option>
+            <option value="student">🧑‍🎓 Student</option>
+            <option value="industry">🤝 Industry Partner</option>
+            <option value="admin">👑 Admin</option>
+          </select>
+          <svg class="select-caret" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </label>
+
+      <div id="auth-id-section" class="auth-id-section" style="display:none;"></div>
+
+      <div id="signup-name-field" class="field" style="display:none;">
+        <span class="field-label">Full name</span>
+        <input type="text" id="signup-name" placeholder="e.g. Anjali Kumari" />
+      </div>
+
+      <label class="field">
+        <span class="field-label">Username / email</span>
+        <input type="text" id="username" placeholder="you@example.com (optional)" />
+      </label>
+
+      <label class="field">
+        <span class="field-label">Password</span>
+        <input type="password" id="password" placeholder="•••••••• (optional)" />
+      </label>
+
+      <button type="submit" id="auth-submit" class="btn btn-primary btn-block">Log in</button>
+      
+      <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line-soft);">
+        <div style="font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-faint); margin-bottom:8px; text-align:center;">Or Quick Demo 1-Click Login</div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center;">
+          <button type="button" class="btn btn-ghost btn-sm quick-role-btn" data-role="citizen">🧑 Citizen</button>
+          <button type="button" class="btn btn-ghost btn-sm quick-role-btn" data-role="government">🏛️ Govt</button>
+          <button type="button" class="btn btn-ghost btn-sm quick-role-btn" data-role="university">🎓 Uni</button>
+          <button type="button" class="btn btn-ghost btn-sm quick-role-btn" data-role="student">🧑‍🎓 Student</button>
+          <button type="button" class="btn btn-ghost btn-sm quick-role-btn" data-role="industry">🤝 Industry</button>
+          <button type="button" class="btn btn-ghost btn-sm quick-role-btn" data-role="admin">👑 Admin</button>
+        </div>
+      </div>
+      <div style="margin-top:14px; text-align:center;">
+        <button type="button" class="btn btn-outline btn-block" id="btn-public-transparency" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span>🏛️ Public Transparency Portal</span> <span style="font-size:11px; opacity:0.7;">(No login required)</span>
+        </button>
+      </div>
+      <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line-soft); display:flex; align-items:center; justify-content:center; gap:6px; font-size:12.5px; color:var(--ink-soft);">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3.1-8.7A2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.7a2 2 0 01-.5 2.1L8 9.7a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.5c.9.3 1.8.5 2.7.6a2 2 0 011.7 2z"/></svg>
+        Prefer to call? Toll-free Helpline: <a id="auth-helpline-link" href="tel:18001234567" style="color:var(--accent); font-weight:700;" data-no-translate>1800-123-4567</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app-shell" class="app-shell hidden">
+
+  <!-- Guided Demo Bar -->
+  <div id="demo-bar" class="demo-bar hidden">
+    <div class="demo-bar-inner">
+      <span class="demo-bar-step" id="demo-bar-step">Step 1 of 5</span>
+      <span class="demo-bar-text" id="demo-bar-text">Welcome to SETU! Click on any report to begin.</span>
+      <div class="demo-bar-actions">
+        <button class="btn btn-sm btn-outline" id="demo-bar-prev">← Prev</button>
+        <button class="btn btn-sm btn-primary" id="demo-bar-next">Next →</button>
+        <button class="btn btn-sm btn-ghost" id="demo-bar-close">✕ Exit Tour</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <button id="sidebar-toggle" class="icon-btn only-mobile" aria-label="Menu">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="topbar-brand">
+      <span class="topbar-mark" data-no-translate>सेतु</span>
+      <span class="topbar-name" data-no-translate>Setu</span>
+      <span id="role-pill" class="role-pill">Citizen</span>
+      <span id="verified-id-pill" class="verified-id-pill hidden"></span>
+    </div>
+    <div class="topbar-actions">
+      <div class="persona-switcher">
+        <button id="persona-switcher-btn" class="btn btn-outline btn-sm persona-switcher-btn" title="Switch Persona">
+          <span id="persona-switcher-label">👤 Switch Role</span>
+        </button>
+        <div id="persona-dropdown" class="persona-dropdown hidden">
+          <button class="persona-opt" data-role="citizen">🧑 Citizen</button>
+          <button class="persona-opt" data-role="government">🏛️ Government</button>
+          <button class="persona-opt" data-role="university">🎓 University</button>
+          <button class="persona-opt" data-role="student">📚 Student</button>
+          <button class="persona-opt" data-role="industry">🏭 Industry</button>
+          <button class="persona-opt" data-role="admin">⚙️ Admin</button>
+        </div>
+      </div>
+      <div id="lang-toggle" class="lang-toggle" data-active="en" role="tablist" aria-label="Choose language" data-no-translate>
+        <span class="lang-toggle-knob" aria-hidden="true"></span>
+        <button type="button" class="lang-toggle-opt" data-lang="en" role="tab" aria-selected="true">EN</button>
+        <button type="button" class="lang-toggle-opt" data-lang="hi" role="tab" aria-selected="false">हि</button>
+        <button type="button" class="lang-toggle-opt" data-lang="kh" role="tab" aria-selected="false">खो</button>
+        <button type="button" class="lang-toggle-opt" data-lang="bn" role="tab" aria-selected="false">বাং</button>
+      </div>
+      <button id="lowbw-btn" class="btn btn-ghost btn-sm lowbw-btn" type="button" aria-pressed="false" data-no-translate>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12.5a10 10 0 0114 0M8.5 16a5 5 0 017 0"/><circle cx="12" cy="19.2" r="1" fill="currentColor"/></svg>
+        <span class="lowbw-label">Low data: Off</span>
+      </button>
+      <button id="notif-btn" class="icon-btn" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span id="notif-dot" class="notif-dot hidden"></span>
+      </button>
+      <button id="logout-btn" class="btn btn-ghost btn-sm">Log out</button>
+      <div id="user-avatar" class="avatar">U</div>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar">
+      <div id="sidebar-nav" class="sidebar-nav"></div>
+      <div class="sidebar-footer">
+        <div id="sidebar-helpline" class="sidebar-helpline hidden"></div>
+        <div class="sidebar-tip" id="sidebar-tip">Tip: the badge color shows your role across the platform.</div>
+      </div>
+    </nav>
+    <div id="sidebar-scrim" class="sidebar-scrim hidden"></div>
+
+    <!-- Main content -->
+    <main id="main-view" class="main-view"></main>
+  </div>
+
+</div>
+
+<!-- ============ MODAL ROOT ============ -->
+<div id="modal-root"></div>
+
+
+<script src="js/i18n.js"></script>
+<script src="js/ivr-core.js"></script>
+<script src="js/data.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/problem-ui.js"></script>
+<script src="js/render-citizen.js"></script>
+<script src="js/render-government.js"></script>
+<script src="js/render-university.js"></script>
+<script src="js/render-student.js"></script>
+<script src="js/render-industry.js"></script>
+<script src="js/render-admin.js"></script>
+<script src="js/render-accountability.js"></script>
+<script src="js/render-phone.js"></script>
+<script src="js/assistant.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
